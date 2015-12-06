@@ -18,7 +18,7 @@ if __name__ == '__main__':
     labels = numpy.zeros(numData)
 
     print "Reloading neural network..."
-    net = NetworkReader.readFrom(os.path.basename(dirname) + 'net')
+    net = NetworkReader.readFrom(os.path.basename(dirname) + 'designnet')
 
     print "Activating neural network..."
     for i in range(numData):
@@ -26,9 +26,11 @@ if __name__ == '__main__':
 
     print "Generating result wav..."
     cdata = numpy.array([])
-    for freq in labels:
-        if(freq > 0):
-            freq = midi_util.frequencyToNoteFrequency(freq)
+    for label in labels:
+        #if(freq > 0):
+        #    freq = midi_util.frequencyToNoteFrequency(label)
+        label = round(label)
+        freq = midi_util.midiToFrequency(label)
         sample = wave_gen.saw(freq, 0.25, 44100)
         sample = wave_gen.saw(freq, 0.25, 44100)
         cdata = numpy.concatenate([cdata, sample])

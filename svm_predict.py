@@ -1,5 +1,5 @@
 import numpy
-import pickle
+import cpickle as pickle
 from sklearn import svm
 
 def saveSVM(clf):

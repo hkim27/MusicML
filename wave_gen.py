@@ -38,14 +38,13 @@ def generateAudio(frequency=440, length=1, rate=44100):
 
 def writeWav(filename, cmatrix, div):
     cdata = numpy.array([])
-    # cmatrix = numpy.genfromtxt(csvname, delimiter=',')
     for i, feature in enumerate(cmatrix):
         sys.stdout.write(str(i * 100/len(cmatrix)) + '%\r')
         sample = numpy.zeros(44100 / div)
         for freq in range(5000):
             if feature[freq] > 0:
                 sample += feature[freq] * saw(freq, 1.0 / div, 44100)
-        cdata = numpy.append(cdata, sample)
+        cdata = numpy.concatenate([cdata, sample])
     saveAudioBuffer(filename, cdata)
 
 if __name__ == '__main__':

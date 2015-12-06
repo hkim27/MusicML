@@ -7,6 +7,8 @@ import midi_util
 import wave_gen
 import sequencer
 
+#Run this to convert midi files (chorales) in the specified directory into wav + a wav of the melody line
+#The resulting files from any *.mid will be *.wav and *melody.wav in the same directory
 if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])
     seq = sequencer.Sequencer() #create a sequencer to handle midi input
@@ -25,9 +27,3 @@ if __name__ == '__main__':
         wave_gen.saveAudioBuffer("%s.wav" %track, sawData)
         wave_gen.saveAudioBuffer("%smelody.wav" %track, melodyData)
         seq.resetSequencer()
-        # add the input to the dataset
-        #print "Adding to dataset..."
-
-
-#	samples = seq.parseMidiFile('000106b_.mid')
-#	wave_gen.saveAudioBuffer('000106b_.wav', samples)

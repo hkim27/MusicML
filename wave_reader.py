@@ -20,7 +20,7 @@ def wavToFeatures(filename):
     if data.ndim > 1:
         data = stereoToMono(data)
 
-    segDiv = 10 #1/10 of a second
+    segDiv = 5 #1/10 of a second
     segSize = rate / segDiv
     start = 0
     end = segSize

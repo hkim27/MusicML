@@ -4,6 +4,7 @@ import sys
 import os
 import wave_gen
 import wave_reader
+import midi_util
 
 # Script to test a trained neural net on a wav file (000106b_.wav)
 #produces a result wav so you can listen to the prediction
@@ -26,6 +27,9 @@ if __name__ == '__main__':
     print "Generating result wav..."
     cdata = numpy.array([])
     for freq in labels:
+        if(freq > 0):
+            freq = midi_util.frequencyToNoteFrequency(freq)
+        sample = wave_gen.saw(freq, 0.25, 44100)
         sample = wave_gen.saw(freq, 0.25, 44100)
         cdata = numpy.concatenate([cdata, sample])
 

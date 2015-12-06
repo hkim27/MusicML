@@ -1,9 +1,11 @@
 import numpy
 from pybrain.tools.shortcuts import buildNetwork
+from pybrain.structure import RecurrentNetwork
 from pybrain.tools.customxml import NetworkWriter, NetworkReader
 from pybrain.datasets import SequentialDataSet
 from pybrain.supervised.trainers import RPropMinusTrainer
-from pybrain.structure.modules import LSTMLayer
+from pybrain.structure.modules import LSTMLayer, SigmoidLayer, LinearLayer
+from pybrain.structure import FullConnection
 import pickle
 import sys
 import os
@@ -46,9 +48,27 @@ def trainNetwork(dirname):
 
     # initialize the neural network
     print "Initializing neural network..."
-    net = buildNetwork(numFeatures, 50, 1,
-                       hiddenclass=LSTMLayer, bias=True, recurrent=True)
-    
+    #net = buildNetwork(numFeatures, 50, 1,
+    #                   hiddenclass=LSTMLayer, bias=True, recurrent=True)
+
+    #manual network building
+    net = RecurrentNetwork()
+    inlayer = LinearLayer(numFeatures)
+    h1 = LSTMLayer(70)
+    h2 = SigmoidLayer(50)
+    outlayer = LinearLayer(1)
+
+    net.addInputModule(inlayer)
+    net.addOutputModule(outlayer)
+    net.addModule(h1)
+    net.addModule(h2)
+
+    net.addConnection(FullConnection(inlayer, h1))
+    net.addConnection(FullConnection(h1, h2))
+    net.addConnection(FullConnection(h2, outlayer))
+
+    net.sortModules()
+
     # train the network on the dataset
     print "Training neural net"
     trainer = RPropMinusTrainer(net, dataset=ds)

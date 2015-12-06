@@ -9,7 +9,7 @@ class Sequencer:
 		# create the empty note event arrays
 		self.noteActive = [False] * 128
 		self.sampleRate = 44100
-		self.output = numpy.zeros(5)
+		self.output = [numpy.empty(0),numpy.empty(0)]
 		self.tracks = []
 		self.bpm = 120 #default tempo
 		self.ppq = 96 #default resolution
@@ -22,6 +22,7 @@ class Sequencer:
 		seconds = (60.0 / (self.bpm * self.ppq)) * duration
 		length = int(seconds * self.sampleRate)
 		sample = numpy.zeros(length)
+		melodysample = numpy.zeros(length)
 		# add in any notes that are active
 		#print "adding some samples in"
 		for i in range(0, 128):
@@ -30,9 +31,15 @@ class Sequencer:
 				frequency = midi_util.midiToFrequency(i)
 				#print "adding frequency " + str(frequency)
 				sample += wave_gen.saw(frequency, seconds, self.sampleRate)
+				if track == 0: #melody track for chorales
+					melodysample += wave_gen.sine(frequency, seconds, self.sampleRate)
 
 		# concatenate this to the output
 		self.tracks[track] = numpy.concatenate([self.tracks[track], sample])
+		if track == 0: #melody track for chorales
+			self.output[1] = numpy.concatenate([self.output[1], melodysample])
+
+
 
 	def parseMidiFile(self, filename):
 		#self.output = [] #numpy.zeros(5)
@@ -59,8 +66,16 @@ class Sequencer:
 
 		track_len = min([len(track) for track in self.tracks])
 		self.tracks = [track[0:track_len] for track in self.tracks] #trim all tracks to the exact same size
-		self.output = numpy.sum(self.tracks, axis=0) #combine tracks
+		self.output[0] = numpy.sum(self.tracks, axis=0) #combine tracks
 		return self.output
+
+	def resetSequencer(self):
+		self.noteActive = [False] * 128
+		self.sampleRate = 44100
+		self.output = [numpy.empty(0),numpy.empty(0)]
+		self.tracks = []
+		self.bpm = 120 #default tempo
+		self.ppq = 96 #default resolution
 
 if __name__ == '__main__':
 	seq = Sequencer()

@@ -56,27 +56,10 @@ def extractFeatures(track, div):
     build_data.saveFile(track + '_volume.csv', vmatrix)
 
 if __name__ == '__main__':
-    filename = sys.argv[1]
-    rate, data = wavfile.read(filename)
-    if data.ndim > 1:
-        data = stereoToMono(data)
-
-    segDiv = 10
-    segSize = rate / segDiv
-    start = 0
-    end = segSize
-    matrix = numpy.array([])
-    vmatrix = numpy.array([])
-    for i in range(0, data.size / segSize):
-        data_seg = data[start:end]
-        start += segSize
-        end += segSize
-        features = analyzer.getFrequencies(data_seg)
-        matrix = build_data.addToFeatureMatrix(matrix, features[0:5000])
-        vmatrix = build_data.addToFeatureMatrix(vmatrix,
-                             numpy.floor(numpy.round(features[0:5000], 5)))
-    # build_data.saveFile('testdata.csv', matrix)
-    build_data.saveFile('volumedata.csv', vmatrix)
-
-    # wave_gen.writeWav('converted_' + filename, matrix, segDiv)
-    wave_gen.writeWav('volume_single_' + filename, vmatrix, segDiv)
+    track = sys.argv[1]
+    div = 10
+    extractFeatures(track, div)
+##    matrix = numpy.genfromtxt(track + '_seg.csv', delimiter=',')
+##    wave_gen.writeWav(track + '_seg.wav', matrix, div)
+##    vmatrix = numpy.genfromtxt(track + '_volume.csv', delimiter=',')
+##    wave_gen.writeWav(track + '_volume.wav', vmatrix, div)

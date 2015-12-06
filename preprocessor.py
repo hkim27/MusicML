@@ -37,7 +37,9 @@ if __name__ == '__main__':
         data = wave_reader.wavToFeatures("%s.wav" %track)
         melody = wave_reader.wavToFeatures("%smelody.wav" %track)
         labels = melody.argmax(axis=1) #axis=1, max frequency across a sample
-        numData = data.shape[0]
+        numData = min(data.shape[0],labels.shape[0])
+        data = data[0:numData,]
+        labels = labels[0:numData]
         matrix = numpy.concatenate([data, numpy.array([labels]).T], axis=1) #horizontal concatenate
         saveFile('%sdata.csv' %track, matrix)
 

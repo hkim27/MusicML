@@ -15,25 +15,6 @@ def readWav(filename):
     rate, data = wavfile.read(filename)
     return rate, data
 
-def wavToFeatures(filename):
-    rate, data = wavfile.read(filename)
-    if data.ndim > 1:
-        data = stereoToMono(data)
-
-    segDiv = 4 #1/10 of a second
-    segSize = rate / segDiv
-    start = 0
-    end = segSize
-    matrix = numpy.array([])
-    for i in range(0, data.size / segSize):
-        data_seg = data[start:end]
-        start += segSize
-        end += segSize
-        features = analyzer.getFrequencies(data_seg)
-        matrix = build_data.addToFeatureMatrix(matrix, features[0:2000])
-    # build_data.saveFile('testdata.csv', matrix)
-    return matrix
-
 def extractFeatures(track, div):
     rate, data = wavfile.read(track + '.wav')
     if data.ndim > 1:
@@ -54,6 +35,25 @@ def extractFeatures(track, div):
                              numpy.array([numpy.argmax(features)]))
     build_data.saveFile(track + '_seg.csv', matrix)
     build_data.saveFile(track + '_volume.csv', vmatrix)
+
+def wavToFeatures(filename):
+    rate, data = wavfile.read(filename)
+    if data.ndim > 1:
+        data = stereoToMono(data)
+
+    segDiv = 4 #1/10 of a second
+    segSize = rate / segDiv
+    start = 0
+    end = segSize
+    matrix = numpy.array([])
+    for i in range(0, data.size / segSize):
+        data_seg = data[start:end]
+        start += segSize
+        end += segSize
+        features = analyzer.getFrequencies(data_seg)
+        matrix = build_data.addToFeatureMatrix(matrix, features[0:2000])
+    # build_data.saveFile('testdata.csv', matrix)
+    return matrix
 
 if __name__ == '__main__':
     track = sys.argv[1]

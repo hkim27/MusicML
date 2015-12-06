@@ -11,7 +11,7 @@ if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])
     #track = os.path.join(dirname, '000106b_.wav')
 
-    print "Reading wav into input data.."
+    print "Reading wav into input data..."
     data = wave_reader.wavToFeatures('000106b_.wav')
     numData = data.shape[0]
     labels = numpy.zeros(numData)
@@ -26,9 +26,8 @@ if __name__ == '__main__':
     print "Generating result wav..."
     cdata = numpy.array([])
     for freq in labels:
-        sample = wave_gen.saw(freq, 0.2, 44100)
+        sample = wave_gen.saw(freq, 0.25, 44100)
         cdata = numpy.concatenate([cdata, sample])
 
     print "Saving result wav..."
     wave_gen.saveAudioBuffer('000106b_predict.wav', cdata)
-    

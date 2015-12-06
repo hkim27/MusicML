@@ -20,7 +20,7 @@ def wavToFeatures(filename):
     if data.ndim > 1:
         data = stereoToMono(data)
 
-    segDiv = 5 #1/10 of a second
+    segDiv = 4 #1/10 of a second
     segSize = rate / segDiv
     start = 0
     end = segSize
@@ -30,7 +30,7 @@ def wavToFeatures(filename):
         start += segSize
         end += segSize
         features = analyzer.getFrequencies(data_seg)
-        matrix = build_data.addToFeatureMatrix(matrix, features[0:5000])
+        matrix = build_data.addToFeatureMatrix(matrix, features[0:2000])
     # build_data.saveFile('testdata.csv', matrix)
     return matrix
 

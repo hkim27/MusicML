@@ -23,30 +23,25 @@ def loadNetwork(filename):
 
 def trainNetwork(dirname):
 
-    numFeatures = 5000
+    numFeatures = 2000
 
     ds = SequentialDataSet(numFeatures, 1)
     
-    tracks = glob.glob(os.path.join(dirname, '*_.wav'))
+    tracks = glob.glob(os.path.join(dirname, '*.csv'))
     for t in tracks:
         track = os.path.splitext(t)[0]
         # load training data
-        print "Reading %s..." % track
-        data = wave_reader.wavToFeatures("%s.wav" %track)
-        melody = wave_reader.wavToFeatures("%smelody.wav" %track)
-        labels = melody.argmax(1) #axis=1, max frequency across a sample
+        print "Reading %s..." % t
+        data = numpy.genfromtxt(t, delimiter=",")
         numData = data.shape[0]
 
         # add the input to the dataset
         print "Adding to dataset..."
         ds.newSequence()
         for i in range(numData):
-            ds.addSample(data[i], (labels[i],))
-
-    # save the dataset
-    print "Saving dataset..."
-    saveNetwork(os.path.basename(dirname) + 'constructedDataset' + os.getenv('HOSTNAME'), ds)
-
+            #ds.addSample(data[i], (labels[i],))
+            input = data[i]
+            ds.addSample(input[0:numFeatures],(input[numFeatures],))
 
 
     # initialize the neural network

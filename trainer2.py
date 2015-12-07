@@ -77,16 +77,16 @@ def trainNetwork(dirname):
     #net.addConnection(FullConnection(h1, h2))
     #net.addConnection(FullConnection(h2, outlayer))
 
-    net.addConnection(FullConnection(inlayer, octaveLayer))
+    net.addConnection(FullConnection(inlayer, octaveLayer, inSliceTo=2000))
     net.addConnection(FullConnection(inlayer, noteLayer))
     #net.addConnection(FullConnection(octaveLayer,combinedLayer))
     for i in range(5):
-        net.addConnection(FullConnection(octaveLayer,combinedLayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
+        net.addConnection(FullConnection(octaveLayer, combinedLayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
     net.addConnection(FullConnection(noteLayer,combinedLayer))
     net.addConnection(FullConnection(combinedLayer, outlayer))
 
-
     net.sortModules()
+
 
     # train the network on the dataset
     print "Training neural net"

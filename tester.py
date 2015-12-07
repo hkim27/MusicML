@@ -13,7 +13,7 @@ if __name__ == '__main__':
     #track = os.path.join(dirname, '000106b_.wav')
 
     print "Reading wav into input data..."
-    data = wave_reader.wavToFeatures('000106b_.wav')
+    data = wave_reader.wavToFeatures('viva.wav')
     numData = data.shape[0]
     labels = numpy.zeros(numData)
 
@@ -36,4 +36,4 @@ if __name__ == '__main__':
         cdata = numpy.concatenate([cdata, sample])
 
     print "Saving result wav..."
-    wave_gen.saveAudioBuffer('000106b_predict.wav', cdata)
+    wave_gen.saveAudioBuffer('vivapredict.wav', cdata)

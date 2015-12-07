@@ -2,10 +2,11 @@ import numpy
 from pybrain.tools.shortcuts import buildNetwork
 from pybrain.structure import RecurrentNetwork
 from pybrain.tools.customxml import NetworkWriter, NetworkReader
-from pybrain.datasets import SequentialDataSet
+from pybrain.datasets import SequenceClassificationDataSet
 from pybrain.supervised.trainers import RPropMinusTrainer
-from pybrain.structure.modules import LSTMLayer, SigmoidLayer, LinearLayer
-from pybrain.structure import FullConnection
+from pybrain.structure.modules import LSTMLayer, SigmoidLayer, LinearLayer, SoftmaxLayer
+from pybrain.structure.moduleslice import ModuleSlice
+from pybrain.structure import FullConnection, MotherConnection, SharedFullConnection
 import pickle
 import sys
 import os
@@ -28,7 +29,7 @@ def trainNetwork(dirname):
 
     numFeatures = 2025
 
-    ds = SequentialDataSet(numFeatures, 1)
+    ds = SequenceClassificationDataSet(numFeatures, 1, nb_classes=60)
     
     tracks = glob.glob(os.path.join(dirname, '*.csv'))
     for t in tracks:
@@ -46,9 +47,9 @@ def trainNetwork(dirname):
             input = data[i]
             label = input[numFeatures]
             if label > 0:
-                label = midi_util.frequencyToMidi(label)
+                label = max(0,midi_util.frequencyToMidi(label)-36) #36 is our lowest MIDI note we consider
             ds.addSample(input[0:numFeatures],(label,))
-
+    ds._convertToOneOfMany(bounds=[0,1]) #change label to indicator vector
 
     # initialize the neural network
     print "Initializing neural network..."
@@ -62,28 +63,31 @@ def trainNetwork(dirname):
     #h2 = SigmoidLayer(50)
     octaveLayer = LSTMLayer(5)
     noteLayer = LSTMLayer(12)
-    combinedLayer = SigmoidLayer(60)
-    outlayer = LinearLayer(1)
+    outlayer = SoftmaxLayer(60)
+    #outlayer = LinearLayer(1)
 
     net.addInputModule(inlayer)
     net.addOutputModule(outlayer)
     #net.addModule(h1)
     #net.addModule(h2)
+    #net.addModule(hiddenLayer)
     net.addModule(octaveLayer)
     net.addModule(noteLayer)
-    net.addModule(combinedLayer)
-
+    #net.addModule(combinedLayer)
+    
     #net.addConnection(FullConnection(inlayer, h1))
     #net.addConnection(FullConnection(h1, h2))
     #net.addConnection(FullConnection(h2, outlayer))
-
-    net.addConnection(FullConnection(inlayer, octaveLayer, inSliceTo=2000))
+    net.addConnection(FullConnection(inlayer, octaveLayer, inSliceFrom=2000))
     net.addConnection(FullConnection(inlayer, noteLayer))
     #net.addConnection(FullConnection(octaveLayer,outlayer))
+    motherConnection = []
     for i in range(5):
-        net.addConnection(FullConnection(octaveLayer, combinedLayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
-    net.addConnection(FullConnection(noteLayer,combinedLayer))
-    net.addConnection(FullConnection(combinedLayer, outlayer))
+        motherConnection.append(MotherConnection(12, name="%d"%i))
+        net.addConnection(SharedFullConnection(motherConnection[i], octaveLayer, outlayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
+        
+    net.addConnection(FullConnection(noteLayer,outlayer))
+    #net.addConnection(FullConnection(combinedLayer, outlayer))
 
     net.sortModules()
 
@@ -93,15 +97,15 @@ def trainNetwork(dirname):
     trainer = RPropMinusTrainer(net, dataset=ds)
 ##    trainer.trainUntilConvergence(maxEpochs=50, verbose=True, validationProportion=0.1)
     error = -1
-    for i in range(500):
+    for i in range(250):
         new_error = trainer.train()
         print "error: " + str(new_error)
-        if abs(error - new_error) < 0.002: break
+        if abs(error - new_error) < 0.0000002: break
         error = new_error
 
     # save the network
     print "Saving neural network..."
-    NetworkWriter.writeToFile(net, os.path.basename(dirname) + 'designnet')
+    NetworkWriter.writeToFile(net, os.path.basename(dirname) + 'classifSharednet2')
 
 if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])

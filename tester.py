@@ -13,9 +13,10 @@ if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])
 
     print "Reloading neural network..."
-    net = NetworkReader.readFrom(os.path.basename(dirname) + 'designnet')
+    net = NetworkReader.readFrom(os.path.basename(dirname) + 'designsmaxnet')
     
     tracks = glob.glob(os.path.join(dirname, 'testing/*.csv'))
+    tracks = tracks[3:5]
     for t in tracks:
         track = os.path.splitext(t)[0]
         print "Reading processed %s..." %track
@@ -28,8 +29,9 @@ if __name__ == '__main__':
 
         print "Activating neural network..."
         for i in range(numData):
-            predict[i] = net.activate(features[i])
-
+            indicatorVector = numpy.array(net.activate(features[i]))
+            predict[i] = indicatorVector.argmax() + 36 #lowest MIDI in range is 36
+            
         print "Generating result %s.wav..." %track
         cdata = numpy.array([])
         for pred in predict:

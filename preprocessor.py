@@ -43,16 +43,14 @@ if __name__ == '__main__':
 
         print "Generating feature data..."
         melody = wave_reader.wavToFeatures("%smelody.wav" %track)
-        labels = numpy.array([melody.argmax(axis=1)]) #axis=1, max frequency across a sample
+        labels = numpy.array([melody.argmax(axis=1)]).T #axis=1, max frequency across a sample
         data = wave_reader.wavToFeatures("%s.wav" %track)
         numData = min(data.shape[0],labels.shape[0])
-
         labels = labels[0:numData]
         data = data[0:numData]
         chord = numpy.array([chordArray(chordsvm.predict(feature)) for feature in data])
-        volume = numpy.array([data.argmax(axis=1)])
-
-        matrix = numpy.concatenate([data, chord, volume.T, labels.T], axis=1) #horizontal concatenate
+        volume = numpy.array([data.argmax(axis=1)]).T
+        matrix = numpy.concatenate([data, chord, volume, labels], axis=1) #horizontal concatenate
         saveFile('%sdata.csv' %track, matrix)
 
         seq.resetSequencer()

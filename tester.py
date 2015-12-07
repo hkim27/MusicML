@@ -5,35 +5,40 @@ import os
 import wave_gen
 import wave_reader
 import midi_util
+import glob
 
 # Script to test a trained neural net on a wav file (000106b_.wav)
 #produces a result wav so you can listen to the prediction
 if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])
-    #track = os.path.join(dirname, '000106b_.wav')
-
-    print "Reading wav into input data..."
-    data = wave_reader.wavToFeatures('viva.wav')
-    numData = data.shape[0]
-    labels = numpy.zeros(numData)
 
     print "Reloading neural network..."
     net = NetworkReader.readFrom(os.path.basename(dirname) + 'designnet')
+    
+    tracks = glob.glob(os.path.join(dirname, 'testing/*.csv'))
+    for t in tracks:
+        track = os.path.splitext(t)[0]
+        print "Reading processed %s..." %track
+        data = numpy.genfromtxt(track + '.csv', delimiter=",")
+        numData = data.shape[0]
+        numFeatures = data.shape[1]-1
+        features = data[:,0:numFeatures]
+        labels = data[:,numFeatures]
+        predict = numpy.zeros(numData)
 
-    print "Activating neural network..."
-    for i in range(numData):
-        labels[i] = net.activate(data[i])
+        print "Activating neural network..."
+        for i in range(numData):
+            predict[i] = net.activate(features[i])
 
-    print "Generating result wav..."
-    cdata = numpy.array([])
-    for label in labels:
-        #if(freq > 0):
-        #    freq = midi_util.frequencyToNoteFrequency(label)
-        label = round(label)
-        freq = midi_util.midiToFrequency(label)
-        sample = wave_gen.saw(freq, 0.25, 44100)
-        sample = wave_gen.saw(freq, 0.25, 44100)
-        cdata = numpy.concatenate([cdata, sample])
+        print "Generating result %s.wav..." %track
+        cdata = numpy.array([])
+        for pred in predict:
+            #if(freq > 0):
+            #    freq = midi_util.frequencyToNoteFrequency(label)
+            pred = round(pred)
+            freq = midi_util.midiToFrequency(pred)
+            sample = wave_gen.saw(freq, 0.25, 44100)
+            cdata = numpy.concatenate([cdata, sample])
 
-    print "Saving result wav..."
-    wave_gen.saveAudioBuffer('vivapredict.wav', cdata)
+        print "Saving result %s.wav..." %track
+        wave_gen.saveAudioBuffer('%sresult.wav' %track, cdata)

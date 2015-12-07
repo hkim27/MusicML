@@ -26,7 +26,7 @@ def loadNetwork(filename):
 
 def trainNetwork(dirname):
 
-    numFeatures = 2000
+    numFeatures = 2025
 
     ds = SequentialDataSet(numFeatures, 1)
     
@@ -79,7 +79,7 @@ def trainNetwork(dirname):
 
     net.addConnection(FullConnection(inlayer, octaveLayer, inSliceTo=2000))
     net.addConnection(FullConnection(inlayer, noteLayer))
-    #net.addConnection(FullConnection(octaveLayer,combinedLayer))
+    #net.addConnection(FullConnection(octaveLayer,outlayer))
     for i in range(5):
         net.addConnection(FullConnection(octaveLayer, combinedLayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
     net.addConnection(FullConnection(noteLayer,combinedLayer))
@@ -93,10 +93,10 @@ def trainNetwork(dirname):
     trainer = RPropMinusTrainer(net, dataset=ds)
 ##    trainer.trainUntilConvergence(maxEpochs=50, verbose=True, validationProportion=0.1)
     error = -1
-    for i in range(150):
+    for i in range(500):
         new_error = trainer.train()
         print "error: " + str(new_error)
-        if abs(error - new_error) < 0.005: break
+        if abs(error - new_error) < 0.002: break
         error = new_error
 
     # save the network

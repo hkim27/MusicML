@@ -1,14 +1,14 @@
 import numpy
-import cpickle as pickle
+import pickle
 from sklearn import svm
 
 def saveSVM(clf):
-        fileObject = open('svm', 'w')
+        fileObject = open('svm_linear', 'w')
 	pickle.dump(clf, fileObject)
 	fileObject.close()
 
 def loadSVM():
-        fileObject = open('svm', 'r')
+        fileObject = open('svm_linear', 'r')
         return pickle.load(fileObject)
 
 def trainSVM():

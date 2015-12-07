@@ -16,7 +16,7 @@ def readWav(filename):
     return rate, data
 
 def wavToFeatures(track):
-    rate, data = wavfile.read(track + '.wav')
+    rate, data = wavfile.read(track)
     if data.ndim > 1:
         data = stereoToMono(data)
     matrix = numpy.array([])

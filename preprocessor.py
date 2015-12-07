@@ -15,7 +15,7 @@ def saveFile(filename, data):
 
 def chordArray(basenote):
     array = numpy.zeros(24)
-    array[basenote] = 1
+    array[round(basenote)] = 1
     return array
 
 

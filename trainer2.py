@@ -16,6 +16,10 @@ import wave_gen
 import wave_reader
 import midi_util
 
+
+def saveFile(filename, data):
+	numpy.savetxt(filename, data, delimiter=',', fmt='%.2f', newline = '\n')
+
 def saveNetwork(filename, net):
 	fileObject = open(filename, 'w')
 	pickle.dump(net, fileObject)
@@ -53,41 +57,27 @@ def trainNetwork(dirname):
 
     # initialize the neural network
     print "Initializing neural network..."
-    #net = buildNetwork(numFeatures, 50, 1,
-    #                   hiddenclass=LSTMLayer, bias=True, recurrent=True)
-
     #manual network building
     net = RecurrentNetwork()
     inlayer = LinearLayer(numFeatures)
-    #h1 = LSTMLayer(70)
-    #h2 = SigmoidLayer(50)
-    octaveLayer = LSTMLayer(5)
-    noteLayer = LSTMLayer(12)
+    hiddenLayer = LSTMLayer(17)
+    #hiddenLayer2 = SigmoidLayer(17)
     outlayer = SoftmaxLayer(60)
-    #outlayer = LinearLayer(1)
 
     net.addInputModule(inlayer)
     net.addOutputModule(outlayer)
-    #net.addModule(h1)
-    #net.addModule(h2)
-    #net.addModule(hiddenLayer)
-    net.addModule(octaveLayer)
-    net.addModule(noteLayer)
-    #net.addModule(combinedLayer)
-    
-    #net.addConnection(FullConnection(inlayer, h1))
-    #net.addConnection(FullConnection(h1, h2))
-    #net.addConnection(FullConnection(h2, outlayer))
-    net.addConnection(FullConnection(inlayer, octaveLayer, inSliceFrom=2000))
-    net.addConnection(FullConnection(inlayer, noteLayer))
-    #net.addConnection(FullConnection(octaveLayer,outlayer))
-    motherConnection = []
+    net.addModule(hiddenLayer)
+    #net.addModule(hiddenLayer2)
+
+    net.addConnection(FullConnection(inlayer, hiddenLayer, inSliceFrom=2000, outSliceTo=5))
+    net.addConnection(FullConnection(inlayer, hiddenLayer, outSliceFrom=5))
+    #net.addConnection(FullConnection(hiddenLayer, hiddenLayer2, inSliceTo=5, outSliceTo=5))
+    #net.addConnection(FullConnection(hiddenLayer, hiddenLayer2, inSliceFrom=5, outSliceFrom=5))
     for i in range(5):
-        motherConnection.append(MotherConnection(12, name="%d"%i))
-        net.addConnection(SharedFullConnection(motherConnection[i], octaveLayer, outlayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
+        net.addConnection(FullConnection(hiddenLayer, outlayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
+
         
-    net.addConnection(FullConnection(noteLayer,outlayer))
-    #net.addConnection(FullConnection(combinedLayer, outlayer))
+    net.addConnection(FullConnection(hiddenLayer, outlayer, inSliceFrom=5))
 
     net.sortModules()
 
@@ -95,17 +85,22 @@ def trainNetwork(dirname):
     # train the network on the dataset
     print "Training neural net"
     trainer = RPropMinusTrainer(net, dataset=ds)
-##    trainer.trainUntilConvergence(maxEpochs=50, verbose=True, validationProportion=0.1)
+    #error = trainer.trainUntilConvergence(maxEpochs=700, verbose=True, continueEpochs=30, validationProportion=0.2)
     error = -1
-    for i in range(250):
+    errors = []
+    for i in range(1000):
         new_error = trainer.train()
         print "error: " + str(new_error)
-        if abs(error - new_error) < 0.0000002: break
+        errors.append(new_error)
+        if abs(error - new_error) < 0.00000002: break
         error = new_error
-
     # save the network
     print "Saving neural network..."
-    NetworkWriter.writeToFile(net, os.path.basename(dirname) + 'classifSharednet2')
+    NetworkWriter.writeToFile(net, '1hiddenlayernet')
+    print "Error:"
+    print errors
+    saveFile(os.path.join(dirname,'errors'), errors)
+    
 
 if __name__ == '__main__':
     dirname = os.path.normpath(sys.argv[1])

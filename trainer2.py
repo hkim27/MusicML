@@ -6,7 +6,7 @@ from pybrain.datasets import SequenceClassificationDataSet
 from pybrain.supervised.trainers import RPropMinusTrainer
 from pybrain.structure.modules import LSTMLayer, SigmoidLayer, LinearLayer, SoftmaxLayer
 from pybrain.structure.moduleslice import ModuleSlice
-from pybrain.structure import FullConnection, MotherConnection, SharedFullConnection
+from pybrain.structure import FullConnection, IdentityConnection
 import pickle
 import sys
 import os
@@ -60,25 +60,19 @@ def trainNetwork(dirname):
     #manual network building
     net = RecurrentNetwork()
     inlayer = LinearLayer(numFeatures)
-    hiddenLayer = LSTMLayer(17)
-    #hiddenLayer2 = SigmoidLayer(17)
+    hiddenLayer = LSTMLayer(17) #first 5 are octave, next 12 are note
     outlayer = SoftmaxLayer(60)
 
     net.addInputModule(inlayer)
     net.addOutputModule(outlayer)
     net.addModule(hiddenLayer)
-    #net.addModule(hiddenLayer2)
 
-    net.addConnection(FullConnection(inlayer, hiddenLayer, inSliceFrom=2000, outSliceTo=5))
-    net.addConnection(FullConnection(inlayer, hiddenLayer, outSliceFrom=5))
-    #net.addConnection(FullConnection(hiddenLayer, hiddenLayer2, inSliceTo=5, outSliceTo=5))
-    #net.addConnection(FullConnection(hiddenLayer, hiddenLayer2, inSliceFrom=5, outSliceFrom=5))
+    net.addConnection(FullConnection(inlayer, hiddenLayer, inSliceTo=2000, outSliceTo=5)) #connect frequency input (2000) to octave layer
+    net.addConnection(FullConnection(inlayer, hiddenLayer, outSliceFrom=5)) #connect all input to note layer
     for i in range(5):
         net.addConnection(FullConnection(hiddenLayer, outlayer, inSliceFrom=i, inSliceTo=i+1, outSliceFrom=i*12, outSliceTo=(i+1)*12))
-
-        
     net.addConnection(FullConnection(hiddenLayer, outlayer, inSliceFrom=5))
-
+    
     net.sortModules()
 
 
@@ -96,10 +90,10 @@ def trainNetwork(dirname):
         error = new_error
     # save the network
     print "Saving neural network..."
-    NetworkWriter.writeToFile(net, '1hiddenlayernet')
+    NetworkWriter.writeToFile(net, 'fixedhiddenlayernet')
     print "Error:"
     print errors
-    saveFile(os.path.join(dirname,'errors'), errors)
+    saveFile(os.path.join(dirname,'fixedhiddenlayererrors'), errors)
     
 
 if __name__ == '__main__':
